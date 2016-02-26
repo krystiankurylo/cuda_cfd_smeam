@@ -1,0 +1,92 @@
+# depslib dependency file v1.0
+1451935333 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/central_force.cpp
+	"central_force.h"
+
+1451932299 /home/wisnia/DOKTORAT/CFD_FOR_SMEAM/central_force.h
+	<iostream>
+
+1451924213 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/central_forces_file.cpp
+	"central_forces_file.h"
+
+1421173926 /home/wisnia/DOKTORAT/CFD_FOR_SMEAM/central_forces_file.h
+	<fstream>
+	"central_force.h"
+	"errors.h"
+
+1451935463 /home/wisnia/DOKTORAT/CFD_FOR_SMEAM/errors.h
+	<cstdlib>
+	<fstream>
+	<iostream>
+
+1451935477 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/errors.cpp
+	"errors.h"
+
+1451935184 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/main.cpp
+	<iostream>
+	"errors.h"
+	"cfd_smeam.h"
+
+1427454805 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/spline.cpp
+	"spline.h"
+
+1427456165 /home/wisnia/DOKTORAT/CFD_FOR_SMEAM/spline.h
+	"defines.h"
+	<cstdlib>
+	<cstring>
+	<fstream>
+	<iomanip>
+	<iostream>
+	"errors.h"
+
+1451935990 /home/wisnia/DOKTORAT/CFD_FOR_SMEAM/defines.h
+
+1425569832 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/force_field_central_forces_file_central.cpp
+	"force_field_central_forces_file.h"
+
+1451470059 /home/wisnia/DOKTORAT/CFD_FOR_SMEAM/force_field_central_forces_file.h
+	"defines.h"
+	"force_field.h"
+	"central_forces_file.h"
+
+1451930133 /home/wisnia/DOKTORAT/CFD_FOR_SMEAM/force_field.h
+	"defines.h"
+	<cmath>
+	<sstream>
+	"central_force.h"
+	"central_forces_file.h"
+	"errors.h"
+
+1451930197 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/force_field.cpp
+	"force_field.h"
+
+1451930294 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/force_field_central.cpp
+	"force_field.h"
+
+1451935940 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/cfd_smeam.cpp
+	"cfd_smeam.h"
+
+1451935534 /home/wisnia/DOKTORAT/CFD_FOR_SMEAM/cfd_smeam.h
+	"defines.h"
+	<cmath>
+	<sstream>
+	"central_force.h"
+	"central_forces_file.h"
+	"errors.h"
+	"spline.h"
+	"timer.h"
+
+1451935857 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/cfd_smeam_core.cpp
+	"cfd_smeam.h"
+
+1415398235 source:/home/wisnia/DOKTORAT/CFD_FOR_SMEAM/timer.cpp
+	"timer.h"
+
+1383572190 /home/wisnia/DOKTORAT/CFD_FOR_SMEAM/timer.h
+	<cstdlib>
+	<ctime>
+	<iomanip>
+	<iostream>
+	<string>
+	<sys/time.h>
+	"errors.h"
+

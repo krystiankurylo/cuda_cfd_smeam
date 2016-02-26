@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<ActiveTarget name="Debug" />
+	<File name="central_force.cpp" open="1" top="0" tabpos="7">
+		<Cursor position="1043" topLine="5" />
+	</File>
+	<File name="central_force.h" open="1" top="0" tabpos="6">
+		<Cursor position="561" topLine="0" />
+	</File>
+	<File name="cfd_smeam.cpp" open="1" top="0" tabpos="3">
+		<Cursor position="8816" topLine="0" />
+	</File>
+	<File name="cfd_smeam.h" open="1" top="1" tabpos="2">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="cfd_smeam_core.cpp" open="1" top="0" tabpos="4">
+		<Cursor position="12771" topLine="297" />
+	</File>
+	<File name="defines.h" open="1" top="0" tabpos="5">
+		<Cursor position="222" topLine="0" />
+	</File>
+	<File name="errors.cpp" open="1" top="0" tabpos="8">
+		<Cursor position="105" topLine="0" />
+	</File>
+	<File name="errors.h" open="1" top="0" tabpos="9">
+		<Cursor position="262" topLine="0" />
+	</File>
+	<File name="main.cpp" open="1" top="0" tabpos="1">
+		<Cursor position="0" topLine="0" />
+	</File>
+	<File name="timer.cpp" open="1" top="0" tabpos="10">
+		<Cursor position="75" topLine="32" />
+	</File>
+</CodeBlocks_layout_file>
