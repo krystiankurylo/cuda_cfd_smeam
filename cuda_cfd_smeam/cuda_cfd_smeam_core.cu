@@ -5,6 +5,8 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
+#include <device_functions.h>
+
 #include "cudaerror.h"
 
 using namespace std;
@@ -59,8 +61,10 @@ __global__ void kernelCreateBondsList(meam_bond* bonds_list_central_,int *n_list
 
 			bonds_list_central_[tidx*max_number_of_n_neighbours_ + tidy].inv_of_r_ij = inv_of_r_ij;
 			bonds_list_central_[tidx*max_number_of_n_neighbours_ + tidy].r_ij_dir[0] = inv_of_r_ij * n_bonds_[tidx*max_number_of_n_neighbours_ + tidy].vec[0];
-			bonds_list_central_[tidx*max_number_of_n_neighbours_ + tidy].r_ij_dir[0] = inv_of_r_ij * n_bonds_[tidx*max_number_of_n_neighbours_ + tidy].vec[1];
-			bonds_list_central_[tidx*max_number_of_n_neighbours_ + tidy].r_ij_dir[0] = inv_of_r_ij * n_bonds_[tidx*max_number_of_n_neighbours_ + tidy].vec[2];
+			bonds_list_central_[tidx*max_number_of_n_neighbours_ + tidy].r_ij_dir[1] = inv_of_r_ij * n_bonds_[tidx*max_number_of_n_neighbours_ + tidy].vec[1];
+			bonds_list_central_[tidx*max_number_of_n_neighbours_ + tidy].r_ij_dir[2] = inv_of_r_ij * n_bonds_[tidx*max_number_of_n_neighbours_ + tidy].vec[2];
+
+			
 		}
 		
 	}
@@ -135,9 +139,60 @@ void CUDA_CFD_sMEAM::Convert1DTo2DArray(meam_bond* source,meam_bond** destinatio
 		}
 	}
 }
+__device__ double computeCosThetaJIKDevice(double r_ij_dir[3], double r_ik_dir[3])
+{
+	return r_ij_dir[0] * r_ik_dir[0] + r_ij_dir[1] * r_ik_dir[1] + r_ij_dir[2] * r_ik_dir[2];
+}
+
+__global__ void CalculateThreeBodyKernel(double* n_i_total, CudaSpline* g_spline,CudaSpline* rho_spline, int* number_of_bonds_central_, meam_bond* bonds_list_central_1D, int number_of_atoms, int max_number_of_neighbours)
+{
+
+	int blid = blockIdx.x;
+
+	if (blid < number_of_atoms)
+	{
+		__shared__ meam_bond cache[100];
+
+		int tid = threadIdx.x;
+		int number_of_bonds = number_of_bonds_central_[blid];
+
+		if (tid < number_of_bonds)
+		{
+			cache[tid] = bonds_list_central_1D[blid*max_number_of_neighbours + tid];
+		}
+
+		__syncthreads();
+
+		n_i_total[blid] = 0.0;
+
+		for (int i = 0; i < number_of_bonds; i++)
+		{
+			if (i != tid)
+			{
+				double cos_theta_jik = computeCosThetaJIKDevice(cache[tid].r_ij_dir, cache[i].r_ij_dir);
+				double spline = g_spline->evaluate_device(cos_theta_jik);
+				n_i_total[blid] += cache[i].f_r_ij * spline;
+			}
+		}
+
+		__syncthreads();
+
+		n_i_total[blid] /= 2;
+		n_i_total[blid] += cache[tid].f_r_ij * n_i_total[blid];
+		n_i_total[blid] += rho_spline->evaluate_device(cache[tid].r_ij);
+	}
+}
 
 void CUDA_CFD_sMEAM::DoStartWithCuda()
 {
+	cudaDeviceProp prop;
+	cudaGetDeviceProperties(&prop, 0);
+	cout << prop.name<< " " << prop.maxThreadsPerBlock << endl;
+	system("pause");
+	cout << "x:" << prop.maxThreadsDim[0] << " y:" << prop.maxThreadsDim[1] << " z:" << prop.maxThreadsDim[2] << endl;
+	system("pause");
+	cout << "x:" << prop.maxGridSize[0] << " y:" << prop.maxGridSize[1] << " z:" << prop.maxGridSize[2]<< endl;
+	system("pause");
 	cudaError cudaStatus;
 
 	meam_bond *bonds_list_central_1D = (meam_bond*)malloc(max_number_of_n_neighbours_*number_of_atoms_*sizeof(meam_bond));
@@ -198,9 +253,25 @@ void CUDA_CFD_sMEAM::DoStartWithCuda()
 	cudaStatus = cudaMemcpy(bonds_list_central_1D, dev_bonds_list_central_1D, max_number_of_n_neighbours_*number_of_atoms_*sizeof(meam_bond), cudaMemcpyDeviceToHost);
 	RaiseError(cudaStatus);
 	
+
+	
+	//system("pause");
+
 	//liczenie f i fprime
 	f_spline_->evaluateCUDA(n_bonds_1D, bonds_list_central_1D, n_num_, number_of_atoms_, max_number_of_n_neighbours_);
-	
+	//for (int i = 0; i < number_of_atoms_; i++)
+	//{
+	//	for (int j = 0; j < n_num_[i]; j++)
+	//	{
+	//		cout << bonds_list_central_1D[i*max_number_of_n_neighbours_ + j].r_ij_dir[0] << "\t";
+	//		if (i % 10 == 0)
+	//			cout << endl;
+	//	}
+
+	//}
+	//
+	//system("pause");
+
 	Convert1DTo2DArray(bonds_list_central_1D, bonds_list_central_);
 	
 	cudaStatus = cudaMemcpy(number_of_bonds_central_, dev_number_of_bonds_central, number_of_atoms_*sizeof(int), cudaMemcpyDeviceToHost);
@@ -208,12 +279,47 @@ void CUDA_CFD_sMEAM::DoStartWithCuda()
 	RaiseError(cudaStatus);
 	
 	double* n_i_total = (double*)malloc(number_of_atoms_*sizeof(double));
+	double* dev_n_i_total;
+	cudaStatus = cudaMalloc(&dev_n_i_total, number_of_atoms_*sizeof(double));
 
-	for (int atom_i = 0; atom_i < number_of_atoms_; atom_i++)
-	{
-		n_i_total[atom_i] = computeElectronDensity(number_of_bonds_central_[atom_i], bonds_list_central_[atom_i]);
-	}
+	CudaSpline* dev_g_spline,*dev_rho_spline;
+	cudaStatus = cudaMalloc(&dev_g_spline, sizeof(CudaSpline));
 
+	RaiseError(cudaStatus);
+
+	cudaStatus = cudaMemcpy(dev_g_spline, g_spline_, sizeof(CudaSpline), cudaMemcpyHostToDevice);
+
+	RaiseError(cudaStatus);
+
+	cudaStatus = cudaMalloc(&dev_rho_spline, sizeof(CudaSpline));
+
+	RaiseError(cudaStatus);
+
+	cudaStatus = cudaMemcpy(dev_rho_spline, rho_spline_, sizeof(CudaSpline), cudaMemcpyHostToDevice);
+
+	RaiseError(cudaStatus);
+
+	cudaStatus = cudaMemcpy(dev_bonds_list_central_1D, bonds_list_central_1D, max_number_of_n_neighbours_*number_of_atoms_*sizeof(meam_bond), cudaMemcpyHostToDevice);
+
+	RaiseError(cudaStatus);
+
+	dim3 block2(16, 16,4);
+	dim3 grid2(16, 16,4);
+
+	CalculateThreeBodyKernel << <block2, grid2 >> >(dev_n_i_total, dev_g_spline, dev_rho_spline, dev_number_of_bonds_central, dev_bonds_list_central_1D, number_of_atoms_, max_number_of_n_neighbours_);
+
+	cudaStatus = cudaMemcpy(n_i_total, dev_n_i_total, number_of_atoms_*sizeof(double), cudaMemcpyDeviceToHost);
+
+	RaiseError(cudaStatus);
+
+	system("pause");
+
+	//for (int atom_i = 0; atom_i < number_of_atoms_; atom_i++)
+	//{
+	//	n_i_total[atom_i] = computeElectronDensity(number_of_bonds_central_[atom_i], bonds_list_central_[atom_i]);
+	//}
+
+	system("pause");
 	U_spline_->EvaluateDerivCUDA(Uprime_, n_i_total, number_of_atoms_);
 
 	cudaFree(dev_n_bonds_1D);
@@ -223,6 +329,9 @@ void CUDA_CFD_sMEAM::DoStartWithCuda()
 	cudaFree(dev_n_num_);
 	
 }
+
+
+
 int CUDA_CFD_sMEAM::createBondsList(int atom_i, meam_bond *bonds_list)
 {
 // tworzymy liste wiazan atomu i-tego,
@@ -272,8 +381,11 @@ double CUDA_CFD_sMEAM::computeElectronDensity(int number_of_bonds, meam_bond *bo
             memcpy(&bond_ik, &bonds_list[k], sizeof(meam_bond));
 
             computeCosThetaJIK(bond_ij.r_ij_dir, bond_ik.r_ij_dir, cos_theta_jik);
-
+			double spline = g_spline_->evaluate(cos_theta_jik);
+			
             n_i_three_body += bond_ik.f_r_ij * g_spline_->evaluate(cos_theta_jik);
+
+			//printf("%lf\t", n_i_three_body);
         }
 
         n_i_total += bond_ij.f_r_ij * n_i_three_body;
@@ -339,6 +451,14 @@ void CUDA_CFD_sMEAM::compute_central_forces()
 		n_i_total = computeElectronDensity(number_of_bonds_central_[atom_i], bonds_list_central_[atom_i]);
 		Uprime_[atom_i] = U_spline_->evaluate_deriv(n_i_total);
 	}
+
+	for (int i = 0; i < number_of_atoms_;i++)
+	for (int j = 0; j < n_num_[i]; j++)
+	{
+		cout << bonds_list_central_[i][j].f_r_ij << "\t";
+	}
+
+	system("pause");
 
     int max_number_of_central_forces = 0;
 

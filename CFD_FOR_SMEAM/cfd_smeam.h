@@ -7,16 +7,15 @@
 
 #include <cmath>
 #include <sstream>
-#include "cuda_cfd_smeam.h"
 #include "central_force.h"
 #include "central_forces_file.h"
 #include "errors.h"
 #include "spline.h"
+#include "cudaspline.cuh"
 
 #ifdef CFD_SMEAM_TIMINGS
 #include "timer.h"
 #endif
-
 
 
 class CFD_sMEAM

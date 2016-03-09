@@ -43,7 +43,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\Krystian\Documents\Visual Studio 2013\Projects\CFD_FOR_SMEAM\cuda_cfd_smeam</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Krystian\Documents\Visual Studio 2013\Projects\CFD_FOR_SMEAM\cuda_cfd_smeam;C:\Users\Krystian\Documents\Visual Studio 2013\Projects\CFD_FOR_SMEAM\Debug;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v7.5\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

@@ -1,10 +1,9 @@
 #include <stdio.h>
 
 
-#include "cudaspline.h"
+#include "cudaspline.cuh"
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
+
 
 #include <windows.h>
 #include <time.h>
@@ -242,6 +241,10 @@ void CudaSpline::evaluateCUDA(vec3d* n_bonds_1D,meam_bond* bonds_list_central_1D
 
 	//alokowanie pamiêci dla bonds_list_central_1D
 	cudaStatus = cudaMalloc(&dev_bonds_list_central_1D, max_number_of_n_neighbours_*number_of_atoms_*sizeof(meam_bond));
+
+	RaiseError(cudaStatus);
+
+	cudaStatus = cudaMemcpy(dev_bonds_list_central_1D, bonds_list_central_1D, max_number_of_n_neighbours_*number_of_atoms_*sizeof(meam_bond),cudaMemcpyHostToDevice);
 
 	RaiseError(cudaStatus);
 

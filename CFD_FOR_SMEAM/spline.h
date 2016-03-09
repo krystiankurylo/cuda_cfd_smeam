@@ -13,7 +13,9 @@
 #include <iostream>
 
 #include "errors.h"
-#include "cudaspline.h"
+
+#include "cudaspline.cuh"
+
 class Spline
 {
 private:

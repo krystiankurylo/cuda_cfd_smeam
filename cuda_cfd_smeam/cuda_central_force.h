@@ -5,15 +5,8 @@
 
 #include <iostream>
 #include "defines.h"
+#include "cudaspline.cuh"
 
-typedef struct
-{
-    bool first_second;
-    int atom_j;
-    double force[3];
-    double r_ij;
-    double r_ij_dir[3];
-} central_force;
 
 
 void allocateCentralForces(int number_of_atoms, int max_number_of_central_forces,

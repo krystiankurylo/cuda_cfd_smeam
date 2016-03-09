@@ -10,7 +10,7 @@
 
 #include "cuda_central_force.h"
 #include "cuda_central_forces_file.h"
-#include "cudaspline.h"
+#include "cudaspline.cuh"
 
 #ifdef CFD_SMEAM_TIMINGS
 #include "timer.h"

@@ -162,7 +162,9 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
   <ItemGroup>
     <ClInclude Include="cudaerror.h" />
     <ClInclude Include="cuda_central_forces_file.h" />
-    <ClInclude Include="cudaspline.h" />
+    <ClInclude Include="cudaspline.cuh">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="cuda_cfd_smeam.h" />
     <ClInclude Include="defines.h" />
     <ClInclude Include="errors.h" />
